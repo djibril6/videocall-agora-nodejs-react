@@ -12,6 +12,7 @@
     "build": "tsc -b ."
   },
   "dependencies": {
+    "agora-access-token": "^2.0.4",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
