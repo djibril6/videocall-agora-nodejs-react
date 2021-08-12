@@ -1,9 +1,9 @@
 import express, { Request, Response }  from 'express';
 import cors from 'cors';
-import agora from 'agora-access-token';
 import { config } from './config';
 import validate from './middlewares/validate.middleware';
 import { agoraValidation } from './validations';
+import { genAgoraToken } from './utils';
 
 const app = express();
 
@@ -12,29 +12,17 @@ app.use('*', cors());
 
 app.use(express.json());
 
-
-
 app.get('/agora-token/:channelID/:isPublisher', 
 validate(agoraValidation.getToken), 
 (req: Request, res: Response) => {
-    try {
-        const expirationTimeInSeconds = 3600;
-        const currentTimestamp = Math.floor(Date.now() / 1000);
-        const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
-
-        const uid = Math.floor(Math.random() * 100000);
-        const role = req.params.isPublisher ? agora.RtcRole.PUBLISHER : agora.RtcRole.SUBSCRIBER;
-        const channel = req.params.channelID;
-
-        const agoraToken = agora.RtcTokenBuilder.buildTokenWithUid(
-            config.agora.appID, 
-            config.agora.primaryCertificate, 
-            channel, 
-            uid, 
-            role, 
-            privilegeExpiredTs
+    try { 
+        const result = genAgoraToken.RTCToken(
+            config.agora.appID,
+            config.agora.primaryCertificate,
+            req.params.channelID,
+            Boolean(req.params.isPublisher)
         );
-        res.send({ appID: config.agora.appID, channel, uid, agoraToken });
+        res.send({ ...result });
     } catch (error) {
         res.status(500).send(error);
     }
